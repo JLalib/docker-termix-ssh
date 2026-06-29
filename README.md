@@ -1,72 +1,61 @@
-# Termix en Docker | Servidor SSH con gestión web
+# Docker Termix SSH 🖥️
 
-**Termix** es un servidor SSH moderno con panel web para gestión remota, ejecución de comandos y control de sesiones. Ideal para entornos DevOps o administración remota sin exponer directamente SSH al exterior.
+Termix es una plataforma web de gestión de servidores profesional, open source y completamente self-hosted que proporciona acceso SSH, gestión de archivos, túneles y herramientas de infraestructura desde un único dashboard web. Es la alternativa gratuita y autohospedable ideal para quienes gestionan múltiples servidores sin querer depender de servicios de pago como Termius.
 
-📦 **Servicios incluidos**
-- Termix (API + panel web)
-- Volumen persistente para configuración y claves
+## 🚀 Características Principales
 
----
+- **Terminal SSH Web:** Acceso total a tus servidores desde cualquier navegador, sin necesidad de clientes locales.
+- **Split Screen:** Divide tu terminal en hasta 4 paneles simultáneamente para trabajo paralelo.
+- **Gestor de Archivos Remoto:** Sube, descarga y edita archivos directamente desde la interfaz web con soporte para sudo.
+- **Túneles SSH:** Creación y gestión de túneles con auto-reconexión y monitoreo de estado.
+- **Gestión de Docker:** Controla tus contenedores (start/stop/pause/remove) directamente desde la UI.
+- **Jump Hosts:** Soporte automatizado para conexiones a través de hosts intermedios.
+- **Seguridad Avanzada:** Autenticación TOTP (2FA), verificación de host keys y soporte para SSH Keys.
+- **PWA & Mobile:** Acceso remoto optimizado desde dispositivos iOS y Android.
 
-⚙️ **docker-compose.yml**
-```yaml
-services:
-  termix:
-    image: termixssh/termix:latest
-    container_name: termix
-    restart: unless-stopped
-    ports:
-      - "2222:22"      # Puerto SSH
-      - "8082:8080"    # Interfaz web
-    environment:
-      - TZ=Europe/Madrid
-      - TERMIX_ADMIN_USER=admin
-      - TERMIX_ADMIN_PASS=admin123
-    volumes:
-      - ./config:/etc/termix
-      - ./data:/var/lib/termix
+## 🛠️ Requisitos del Sistema
+
+- **RAM:** 1-2 GB (Backend Node.js).
+- **Almacenamiento:** 2 GB o más para base de datos y logs.
+- **Puerto:** 8080 (Web Dashboard).
+- **Software:** Docker y Docker Compose instalados.
+
+## 📦 Instalación con Docker Compose
+
+### 1. Preparar el entorno
+Crea la carpeta del proyecto y entra en ella:
+```bash
+mkdir termix-ssh && cd termix-ssh
 ```
 
----
+### 2. Crear el archivo `docker-compose.yml`
+Copia el contenido del archivo `docker-compose.yml` incluido en este repositorio.
 
-▶️ **Instrucciones de uso**
+### 3. Desplegar el servicio
+```bash
+docker compose up -d
+```
 
-1. **Crear el archivo `docker-compose.yml`**  
-   Colócalo en una carpeta, por ejemplo `/docker/termix`.
+### 4. Acceder al Dashboard
+Abre tu navegador y entra en: `http://localhost:8080`
 
-2. **Arrancar Termix**
-   ```bash
-   docker compose up -d
-   ```
+## ⚙️ Primeros Pasos
 
-3. **Acceder al panel web**
-   👉 `http://localhost:8082`  
-   Usuario: `admin`  
-   Contraseña: `admin123`
+1. **Configuración Inicial:** Al entrar por primera vez, crea tu cuenta de administrador.
+2. **Agregar Servidores:** Ve a **Dashboard $\rightarrow$ Add New Host**. Ingresa el hostname/IP, usuario y el método de autenticación (Password o SSH Key).
+3. **Conexión:** Haz clic en el servidor desde el dashboard para abrir la terminal web.
+4. **Túneles:** Crea túneles SSH desde el dashboard definiendo los puertos locales y remotos.
 
-4. **Conectarte por SSH**
-   ```bash
-   ssh admin@localhost -p 2222
-   ```
-   (Sustituye `localhost` por la IP del servidor si accedes desde la LAN)
+## 🛡️ Seguridad y Mantenimiento
 
----
-
-🧹 **Comandos útiles**
-- Ver logs:
+- **HTTPS:** Termix transmite credenciales sensibles. Se recomienda encarecidamente usar un proxy inverso como **Caddy** o **Nginx** para habilitar HTTPS.
+- **SSH Keys:** Prioriza el uso de llaves SSH sobre contraseñas para gestionar tus servidores.
+- **Logs:** `docker logs -f termix`
+- **Backup de Datos:** 
   ```bash
-  docker logs -f termix
+  docker run --rm -v termix-data:/data -v $(pwd):/backup alpine tar czf /backup/termix-backup-$(date +%Y%m%d).tar.gz -C /data .
   ```
-- Detener el contenedor:
-  ```bash
-  docker compose down
-  ```
-- Reiniciar el servicio:
-  ```bash
-  docker compose restart termix
-  ```
+- **Actualización:** `docker compose pull && docker compose up -d`
 
 ---
-
-🧱 **Volúmenes y persistencia**
-La configuración y claves SSH se almacenan en `./config` y `./data`, permitiendo mantener usuarios y sesiones entre reinicios.
+*Basado en el tutorial de [Genbyte](https://genbyte.blogspot.com/)*
